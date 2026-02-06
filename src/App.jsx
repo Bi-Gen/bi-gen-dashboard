@@ -4,7 +4,8 @@ import {
     Users, Calendar, CreditCard, LayoutDashboard,
     MapPin, TrendingUp, Activity, Clock, CheckCircle2,
     XCircle, Search, FileText, Settings, ChevronRight,
-    Mail, Phone, Eye, Edit, Filter, ArrowUpDown, UserCog, Award
+    Mail, Phone, Eye, Edit, Filter, ArrowUpDown, UserCog, Award,
+    Menu, X
 } from 'lucide-react';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -15,7 +16,7 @@ import data from './data.json';
 const BI_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 // ========== SIDEBAR ==========
-const Sidebar = () => {
+const Sidebar = ({ isOpen, onClose }) => {
     const navItems = [
         { icon: LayoutDashboard, label: 'Panoramica', path: '/' },
         { icon: Users, label: 'Pazienti', path: '/pazienti' },
@@ -27,50 +28,74 @@ const Sidebar = () => {
     ];
 
     return (
-        <aside className="w-64 bg-white border-r border-slate-200 flex flex-col h-screen fixed">
-            <div className="p-6">
-                {/* Clinic Branding */}
-                <div className="flex items-center gap-3 mb-6 pb-6 border-b border-slate-100">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
-                        <Activity className="text-white w-5 h-5" />
+        <>
+            {/* Mobile overlay */}
+            {isOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+                    onClick={onClose}
+                />
+            )}
+
+            <aside className={`
+                w-64 bg-white border-r border-slate-200 flex flex-col h-screen fixed z-50
+                transition-transform duration-300 ease-in-out
+                ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+                lg:translate-x-0
+            `}>
+                {/* Mobile close button */}
+                <button
+                    onClick={onClose}
+                    className="lg:hidden absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600"
+                >
+                    <X className="w-5 h-5" />
+                </button>
+
+                <div className="p-6">
+                    {/* Clinic Branding */}
+                    <div className="flex items-center gap-3 mb-6 pb-6 border-b border-slate-100">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+                            <Activity className="text-white w-5 h-5" />
+                        </div>
+                        <div>
+                            <span className="font-bold text-lg text-slate-800 tracking-tight block">BI Gen</span>
+                            <span className="text-xs text-slate-400">Dental & Medical</span>
+                        </div>
                     </div>
-                    <div>
-                        <span className="font-bold text-lg text-slate-800 tracking-tight block">BI Gen</span>
-                        <span className="text-xs text-slate-400">Dental & Medical</span>
-                    </div>
+
+                    <nav className="space-y-1">
+                        {navItems.map((item, i) => (
+                            <NavLink
+                                key={i}
+                                to={item.path}
+                                onClick={onClose}
+                                className={({ isActive }) =>
+                                    `w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive
+                                        ? 'bg-blue-50 text-blue-700'
+                                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                                    }`
+                                }
+                            >
+                                <item.icon className="w-4 h-4" />
+                                {item.label}
+                            </NavLink>
+                        ))}
+                    </nav>
                 </div>
 
-                <nav className="space-y-1">
-                    {navItems.map((item, i) => (
-                        <NavLink
-                            key={i}
-                            to={item.path}
-                            className={({ isActive }) =>
-                                `w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive
-                                    ? 'bg-blue-50 text-blue-700'
-                                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                                }`
-                            }
-                        >
-                            <item.icon className="w-4 h-4" />
-                            {item.label}
-                        </NavLink>
-                    ))}
-                </nav>
-            </div>
-
-            <div className="mt-auto p-4 border-t border-slate-100">
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center">
-                        <Settings className="w-4 h-4 text-slate-400" />
-                    </div>
-                    <div className="text-xs">
-                        <p className="font-medium text-slate-600">BI Gen v1.0</p>
-                        <p className="text-slate-400">Business Intelligence</p>
+                <div className="mt-auto p-4 border-t border-slate-100">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center">
+                            <Settings className="w-4 h-4 text-slate-400" />
+                        </div>
+                        <div className="text-xs">
+                            <p className="font-medium text-slate-600">BI Gen v1.0</p>
+                            <p className="text-slate-400">Business Intelligence</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </aside>
+            </aside>
+        </>
     );
 };
 
@@ -129,7 +154,7 @@ const DataTable = ({ columns, data: tableData, onRowClick }) => (
                 </tbody>
             </table>
         </div>
-        <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-sm text-slate-500">Mostrando 15 di {tableData.length} risultati</p>
             <div className="flex gap-2">
                 <button className="px-3 py-1 text-sm border border-slate-200 rounded-lg hover:bg-slate-50">Precedente</button>
@@ -209,15 +234,15 @@ const PanoramicaPage = () => {
 
     return (
         <>
-            <header className="flex items-center justify-between mb-8">
+            <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800">Panoramica Aziendale</h1>
-                    <p className="text-slate-500">Analisi delle performance cliniche ed economiche in tempo reale.</p>
+                    <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Panoramica Aziendale</h1>
+                    <p className="text-slate-500 text-sm sm:text-base">Analisi delle performance cliniche ed economiche.</p>
                 </div>
                 <select
                     value={selectedLocation}
                     onChange={(e) => setSelectedLocation(e.target.value)}
-                    className="px-4 py-2 border border-slate-200 rounded-lg bg-white text-sm font-medium"
+                    className="px-4 py-2 border border-slate-200 rounded-lg bg-white text-sm font-medium w-full sm:w-auto"
                 >
                     <option value="All">Tutte le sedi</option>
                     {(data.locations || []).map(loc => (
@@ -364,16 +389,16 @@ const PazientiPage = () => {
     ];
     return (
         <>
-            <header className="flex items-center justify-between mb-8">
+            <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800">Anagrafica Pazienti</h1>
-                    <p className="text-slate-500">Gestione e visualizzazione di tutti i pazienti registrati.</p>
+                    <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Anagrafica Pazienti</h1>
+                    <p className="text-slate-500 text-sm sm:text-base">Gestione e visualizzazione dei pazienti registrati.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <div className="relative">
+                    <div className="relative w-full sm:w-auto">
                         <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                         <input type="text" placeholder="Cerca paziente..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-9 pr-4 py-2 border border-slate-200 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 w-64" />
+                            className="pl-9 pr-4 py-2 border border-slate-200 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 w-full sm:w-64" />
                     </div>
                 </div>
             </header>
@@ -413,13 +438,13 @@ const AppuntamentiPage = () => {
     const cancelled = appointments.filter(a => a.state === 'cancelled').length;
     return (
         <>
-            <header className="flex items-center justify-between mb-8">
+            <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800">Gestione Appuntamenti</h1>
-                    <p className="text-slate-500">Visualizza e filtra tutti gli appuntamenti delle sedi.</p>
+                    <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Gestione Appuntamenti</h1>
+                    <p className="text-slate-500 text-sm sm:text-base">Visualizza e filtra tutti gli appuntamenti.</p>
                 </div>
                 <select value={filterState} onChange={(e) => setFilterState(e.target.value)}
-                    className="px-4 py-2 border border-slate-200 rounded-lg bg-white text-sm font-medium">
+                    className="px-4 py-2 border border-slate-200 rounded-lg bg-white text-sm font-medium w-full sm:w-auto">
                     <option value="All">Tutti gli stati</option>
                     <option value="completed">Completati</option>
                     <option value="noshow">No-Show</option>
@@ -453,9 +478,9 @@ const FatturazionePage = () => {
     ];
     return (
         <>
-            <header className="mb-8">
-                <h1 className="text-2xl font-bold text-slate-800">Fatturazione e Incassi</h1>
-                <p className="text-slate-500">Panoramica finanziaria e dettaglio fatture emesse.</p>
+            <header className="mb-6 sm:mb-8">
+                <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Fatturazione e Incassi</h1>
+                <p className="text-slate-500 text-sm sm:text-base">Panoramica finanziaria e dettaglio fatture.</p>
             </header>
             <section className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <KPICard title="Fatturato Totale" value={`€${(totalBilled / 1000000).toFixed(2)}M`} detail="Importo lordo" icon={CreditCard} trend={12.5} />
@@ -490,9 +515,9 @@ const PreventiviPage = () => {
     ];
     return (
         <>
-            <header className="mb-8">
-                <h1 className="text-2xl font-bold text-slate-800">Gestione Preventivi</h1>
-                <p className="text-slate-500">Analisi e monitoraggio dei piani di cura proposti.</p>
+            <header className="mb-6 sm:mb-8">
+                <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Gestione Preventivi</h1>
+                <p className="text-slate-500 text-sm sm:text-base">Analisi e monitoraggio dei piani di cura.</p>
             </header>
             <section className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <KPICard title="Totale Preventivi" value={carePlans.length.toLocaleString('it-IT')} detail="Creati" icon={FileText} />
@@ -517,9 +542,9 @@ const SediPage = () => {
     });
     return (
         <>
-            <header className="mb-8">
-                <h1 className="text-2xl font-bold text-slate-800">Gestione Sedi</h1>
-                <p className="text-slate-500">Performance e statistiche per ogni sede operativa.</p>
+            <header className="mb-6 sm:mb-8">
+                <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Gestione Sedi</h1>
+                <p className="text-slate-500 text-sm sm:text-base">Performance e statistiche per ogni sede.</p>
             </header>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {locationStats.map((loc, i) => (
@@ -619,12 +644,12 @@ const OperatoriPage = () => {
 
     return (
         <>
-            <header className="flex items-center justify-between mb-8">
+            <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800">Analisi Operatori</h1>
-                    <p className="text-slate-500">Performance e produttività di medici e collaboratori.</p>
+                    <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Analisi Operatori</h1>
+                    <p className="text-slate-500 text-sm sm:text-base">Performance e produttività di medici e collaboratori.</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
                     <select
                         value={filterLocation}
                         onChange={(e) => setFilterLocation(e.target.value)}
@@ -742,7 +767,7 @@ const OperatoriPage = () => {
 };
 
 // ========== GLOBAL HEADER ==========
-const GlobalHeader = () => {
+const GlobalHeader = ({ onMenuClick }) => {
     const today = new Date();
     const dayNames = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
     const monthNames = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
@@ -752,27 +777,27 @@ const GlobalHeader = () => {
 
     return (
         <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
-            <div className="flex items-center gap-2">
-                <Search className="w-4 h-4 text-slate-400" />
-                <input
-                    type="text"
-                    placeholder="Cerca..."
-                    className="bg-transparent text-sm text-slate-600 focus:outline-none w-48"
-                />
-            </div>
-            <div className="flex items-center gap-6">
-                <div className="text-right">
+            {/* Mobile menu button */}
+            <button
+                onClick={onMenuClick}
+                className="lg:hidden p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-lg"
+            >
+                <Menu className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3 sm:gap-6 ml-auto">
+                <div className="text-right hidden sm:block">
                     <p className="text-xs text-slate-400">{dayName}</p>
                     <p className="text-sm font-medium text-slate-700">{dateStr}</p>
                 </div>
-                <div className="h-8 w-px bg-slate-200"></div>
+                <div className="h-8 w-px bg-slate-200 hidden sm:block"></div>
                 <div className="flex items-center gap-2">
                     <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
                         <MapPin className="w-4 h-4 text-white" />
                     </div>
                     <div className="text-right">
-                        <p className="text-sm font-semibold text-slate-800">Dental & Medical Group</p>
-                        <p className="text-xs text-slate-400">4 sedi attive</p>
+                        <p className="text-sm font-semibold text-slate-800 hidden sm:block">Dental & Medical Group</p>
+                        <p className="text-xs text-slate-400 hidden sm:block">4 sedi attive</p>
                     </div>
                 </div>
             </div>
@@ -782,11 +807,13 @@ const GlobalHeader = () => {
 
 // ========== MAIN APP ==========
 const AppContent = () => {
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+
     return (
         <div className="flex min-h-screen bg-slate-50">
-            <Sidebar />
-            <main className="flex-1 ml-64 p-8">
-                <GlobalHeader />
+            <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+            <main className="flex-1 lg:ml-64 p-4 sm:p-6 lg:p-8">
+                <GlobalHeader onMenuClick={() => setSidebarOpen(true)} />
                 <Routes>
                     <Route path="/" element={<PanoramicaPage />} />
                     <Route path="/pazienti" element={<PazientiPage />} />
