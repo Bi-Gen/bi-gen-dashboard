@@ -15,8 +15,11 @@ import data from './data.json';
 const BI_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 // ========== SIDEBAR ==========
-const Sidebar = () => {
-    const location = useLocation();
+const Sidebar = ({ selectedDoctor, setSelectedDoctor }) => {
+    const operators = data.operators || [];
+    const doctors = operators.filter(op => op.role === 'Dentista' || op.role === 'Medico');
+    const currentDoctor = doctors.find(d => d.id === selectedDoctor) || doctors[0];
+
     const navItems = [
         { icon: LayoutDashboard, label: 'Panoramica', path: '/' },
         { icon: Users, label: 'Pazienti', path: '/pazienti' },
@@ -30,11 +33,37 @@ const Sidebar = () => {
     return (
         <aside className="w-64 bg-white border-r border-slate-200 flex flex-col h-screen fixed">
             <div className="p-6">
-                <div className="flex items-center gap-2 mb-8">
-                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                {/* Clinic Branding */}
+                <div className="flex items-center gap-3 mb-6 pb-6 border-b border-slate-100">
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
                         <Activity className="text-white w-5 h-5" />
                     </div>
-                    <span className="font-bold text-xl text-slate-800 tracking-tight">BI Gen</span>
+                    <div>
+                        <span className="font-bold text-lg text-slate-800 tracking-tight block">BI Gen</span>
+                        <span className="text-xs text-slate-400">Dental & Medical</span>
+                    </div>
+                </div>
+
+                {/* Doctor Selector */}
+                <div className="mb-6">
+                    <p className="text-xs text-slate-400 uppercase tracking-wider mb-2 font-medium">Operatore Attivo</p>
+                    <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+                        <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md">
+                            {currentDoctor?.FullName?.split(' ').map(n => n[0]).join('') || 'DR'}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <select
+                                value={selectedDoctor || ''}
+                                onChange={(e) => setSelectedDoctor(parseInt(e.target.value))}
+                                className="w-full bg-transparent text-sm font-medium text-slate-700 focus:outline-none cursor-pointer truncate"
+                            >
+                                {doctors.map(doc => (
+                                    <option key={doc.id} value={doc.id}>{doc.FullName}</option>
+                                ))}
+                            </select>
+                            <p className="text-xs text-slate-400 truncate">{currentDoctor?.role || 'Dentista'}</p>
+                        </div>
+                    </div>
                 </div>
 
                 <nav className="space-y-1">
@@ -57,9 +86,14 @@ const Sidebar = () => {
             </div>
 
             <div className="mt-auto p-4 border-t border-slate-100">
-                <div className="text-xs text-slate-400">
-                    <p className="font-medium text-slate-600 mb-1">Business Intelligence</p>
-                    <p>Versione Demo v1.0</p>
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center">
+                        <Settings className="w-4 h-4 text-slate-400" />
+                    </div>
+                    <div className="text-xs">
+                        <p className="font-medium text-slate-600">BI Gen v1.0</p>
+                        <p className="text-slate-400">Business Intelligence</p>
+                    </div>
                 </div>
             </div>
         </aside>
@@ -733,24 +767,72 @@ const OperatoriPage = () => {
     );
 };
 
+// ========== GLOBAL HEADER ==========
+const GlobalHeader = () => {
+    const today = new Date();
+    const dayNames = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
+    const monthNames = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+
+    const dayName = dayNames[today.getDay()];
+    const dateStr = `${today.getDate()} ${monthNames[today.getMonth()]} ${today.getFullYear()}`;
+
+    return (
+        <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-2">
+                <Search className="w-4 h-4 text-slate-400" />
+                <input
+                    type="text"
+                    placeholder="Cerca..."
+                    className="bg-transparent text-sm text-slate-600 focus:outline-none w-48"
+                />
+            </div>
+            <div className="flex items-center gap-6">
+                <div className="text-right">
+                    <p className="text-xs text-slate-400">{dayName}</p>
+                    <p className="text-sm font-medium text-slate-700">{dateStr}</p>
+                </div>
+                <div className="h-8 w-px bg-slate-200"></div>
+                <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                        <MapPin className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="text-right">
+                        <p className="text-sm font-semibold text-slate-800">Dental & Medical Group</p>
+                        <p className="text-xs text-slate-400">4 sedi attive</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 // ========== MAIN APP ==========
+const AppContent = () => {
+    const [selectedDoctor, setSelectedDoctor] = useState(null);
+
+    return (
+        <div className="flex min-h-screen bg-slate-50">
+            <Sidebar selectedDoctor={selectedDoctor} setSelectedDoctor={setSelectedDoctor} />
+            <main className="flex-1 ml-64 p-8">
+                <GlobalHeader />
+                <Routes>
+                    <Route path="/" element={<PanoramicaPage />} />
+                    <Route path="/pazienti" element={<PazientiPage />} />
+                    <Route path="/appuntamenti" element={<AppuntamentiPage />} />
+                    <Route path="/fatturazione" element={<FatturazionePage />} />
+                    <Route path="/preventivi" element={<PreventiviPage />} />
+                    <Route path="/sedi" element={<SediPage />} />
+                    <Route path="/operatori" element={<OperatoriPage />} />
+                </Routes>
+            </main>
+        </div>
+    );
+};
+
 export default function App() {
     return (
         <BrowserRouter>
-            <div className="flex min-h-screen bg-slate-50">
-                <Sidebar />
-                <main className="flex-1 ml-64 p-8">
-                    <Routes>
-                        <Route path="/" element={<PanoramicaPage />} />
-                        <Route path="/pazienti" element={<PazientiPage />} />
-                        <Route path="/appuntamenti" element={<AppuntamentiPage />} />
-                        <Route path="/fatturazione" element={<FatturazionePage />} />
-                        <Route path="/preventivi" element={<PreventiviPage />} />
-                        <Route path="/sedi" element={<SediPage />} />
-                        <Route path="/operatori" element={<OperatoriPage />} />
-                    </Routes>
-                </main>
-            </div>
+            <AppContent />
         </BrowserRouter>
     );
 }
